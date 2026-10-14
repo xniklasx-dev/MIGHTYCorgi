@@ -31,6 +31,8 @@ Optional:
 - Relevant links
 -->
 
+- None
+
 ## Dependencies
 
 <!--
@@ -40,12 +42,3 @@ Depends on #12
 -->
 
 - None
-
-## Subtasks
-
-<!--
-Add implementation tasks after refinement/planning if needed.
-Each task should normally have exactly one responsible assignee.
--->
-
-- [ ]
