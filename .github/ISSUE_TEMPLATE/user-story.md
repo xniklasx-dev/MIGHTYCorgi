@@ -20,6 +20,15 @@ type: Feature
 - [ ] Criterion 2
 - [ ] Criterion 3
 
+## Definition of Done
+
+- [ ] Required implementation/work is completed
+- [ ] Relevant tests are implemented and/or passing
+- [ ] Changes are reviewed if applicable
+- [ ] Documentation is updated if necessary
+- [ ] Project fields are updated
+- [ ] Actual Hours are recorded
+
 ## Additional Context
 
 <!--

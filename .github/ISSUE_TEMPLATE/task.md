@@ -15,17 +15,6 @@ Describe the concrete work that needs to be done.
 Keep the task focused and small enough to be completed by one person.
 -->
 
-## Parent User Story
-
-<!--
-Link the User Story this task belongs to.
-
-Example:
-Parent: #12
--->
-
-Parent: #
-
 ## Goal
 
 <!--
