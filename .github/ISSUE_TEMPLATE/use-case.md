@@ -15,7 +15,7 @@ assignees: ''
 
 ## Use Case Specification
 
-**File:** [UC-XX – Use Case Name](https://github.com/xniklasx-dev/MIGHTYCorgi/blob/main/docs/use_cases/UC-XX_name.md)
+**File:** [UC-XX - Use Case Name](https://github.com/xniklasx-dev/MIGHTYCorgi/blob/main/docs/use_cases/UC-XX_name.md)
 
 <!-- Replace the URL above with the actual link to the use case specification file in the repository. -->
 
