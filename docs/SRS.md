@@ -165,7 +165,7 @@ Players are assumed to access the game in a modern browser with keyboard and mou
 
 #### 3.1.1 UC-01 Clear a Combat Encounter
 
-_Author: Kilian_ · The player engages in real-time combat using attacks, movement, and class abilities to defeat enemies and complete encounters. · [Specification](use_cases/UC-01_Combat_System.md)
+_Author: MIGHTYCorgi_ · The player engages in real-time combat using attacks, movement, and class abilities to defeat enemies and complete encounters. · [Specification](use_cases/UC-01_Combat_System.md)
 
 #### 3.1.2 UC-02 Move the Corgi
 
@@ -315,6 +315,8 @@ Displays all available Corgi characters in a grid layout and provides access to 
 ##### Combat
 
 ![Combat Screen](mockups/UC-01_Combat_System.png)
+
+![Combat Movement](mockups/UC-02_Corgi_Movement.png)
 
 ##### Item Collection
 

@@ -31,15 +31,15 @@ This use case focuses exclusively on selecting a class during character creation
 
 ## 3 Mockup
 
-![UC-03 Class Selection Wireframe](../mockups/UC-03_Select_a_Corgi_class.png)
+![UC-03 Class Selection Wireframe](../mockups/UC-03_01_Class_Selection.png)
 
 Wireframe shows the three starter classes, their initial abilities, later class features, and the confirmation of character creation.
 
-![UC-03 Class Selection Wireframe](../mockups/UC-03_Select_a_Corgi_class.png)
+![UC-03 Class Selection Wireframe](../mockups/UC-03_02_Class_Preview.png)
 
 Wireframe shows the three starter classes, their initial abilities, later class features, and the confirmation of character creation.
 
-![UC-03 Class Selection Wireframe](../mockups/UC-03_Select_a_Corgi_class.png)
+![UC-03 Class Selection Wireframe](../mockups/UC-03_03_Confirm_Character.png)
 
 Wireframe shows the three starter classes, their initial abilities, later class features, and the confirmation of character creation.
 
