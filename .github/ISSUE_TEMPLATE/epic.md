@@ -3,7 +3,8 @@ name: Epic
 about: Create a long-running parent issue to organize related user stories and tasks
 title: "[EPIC] "
 labels: epic
-assignees: ""
+assignees: ''
+
 ---
 
 ## Epic Goal
