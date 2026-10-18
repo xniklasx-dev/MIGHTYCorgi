@@ -1,0 +1,40 @@
+@startuml
+hide footbox
+title UC-06 Select a Corgi class during character creation
+actor Player
+participant "Frontend\n(Character creation)" as FE
+participant "Backend\n(Character service)" as BE
+database "SQLite\n(Characters/classes)" as DB
+
+Player -> FE : Start creating new Corgi
+FE -> BE : Request three starter class definitions
+BE -> DB : Read Barkmage, S.P.A.W. Agent, Barkguard
+DB --> BE : Class definitions / milestone previews
+BE --> FE : Available classes and starting features
+FE --> Player : Show 3 classes and base Corgi abilities
+
+Player -> FE : Choose class; review class preview
+FE --> Player : Show starting / future class features
+Player -> FE : Confirm character creation and class
+FE -> BE : Create character (details, classId)
+BE -> DB : Validate class and insert new character
+with class and initial progression (transaction)
+alt Valid request and transaction succeeds
+    DB --> BE : Character persisted (id, classId)
+    BE --> FE : Creation successful; roster updated
+    FE --> Player : Confirm new Corgi and selected class
+else Invalid class or character data
+    BE --> FE : Validation error; no character created
+    FE --> Player : Correct input or choose a valid class
+else Persistence fails
+    DB --> BE : Transaction rolled back
+    BE --> FE : Creation failed; no partial character
+    FE --> Player : Offer retry or cancellation
+end
+
+note over Player,FE
+Class is tied to this character, not to a run.
+Character-level class milestones, shared skill-tree choices,
+and inventory/items are separate use cases.
+end note
+@enduml

@@ -1,0 +1,34 @@
+@startuml
+title UC-05 Collect Item Drops
+actor Player
+boundary "Game Frontend" as UI
+control "Item Drop System" as Drops
+database "Game / Inventory State" as State
+UI -> Drops: Enemy defeated or event completed
+Drops -> State: Read reward rules and item definitions
+State --> Drops: Drop chances, items and rarities
+alt Drop roll successful
+ Drops -> State: Create item pickup
+ Drops --> UI: Show dropped item
+ UI --> Player: Display pickup with type / rarity
+ Player -> UI: Collect item in pickup range
+ UI -> Drops: Request pickup
+ Drops -> State: Check pickup availability and item type
+ State --> Drops: Valid pickup and item definition
+ alt Persistent inventory item
+  Drops -> State: Add exactly one item; remove pickup
+  State --> Drops: Updated collected items
+  Drops --> UI: Item name and rarity
+  UI --> Player: Show pickup feedback
+ else Temporary treat
+  Drops -> State: Apply treat effect; remove pickup
+  Drops --> UI: Effect feedback
+  UI --> Player: Show active boost
+ else Pickup already claimed
+  Drops --> UI: Reject duplicate pickup
+  UI --> Player: No item granted
+ end
+else No drop
+ Drops --> UI: No item created
+end
+@enduml

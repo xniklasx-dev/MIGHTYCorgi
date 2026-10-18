@@ -1,0 +1,56 @@
+
+@startuml
+title MIGHTYCorgi - Use Case Diagram
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam linetype ortho
+
+actor "Player" as Player
+
+rectangle "MIGHTYCorgi" {
+
+    usecase "UC-01\nClear a Combat Encounter" as UC01
+    usecase "UC-02\nMove the Corgi" as UC02
+    usecase "UC-03\nSelect a Corgi Class" as UC03
+    usecase "UC-04\nCustomize a Corgi" as UC04
+    usecase "UC-05\nCollect Item Drops" as UC05
+    usecase "UC-06\nStart a Run" as UC06
+    usecase "UC-07\nManage Equipment" as UC07
+    usecase "UC-08\nUpgrade Corgi Skills" as UC08
+    usecase "UC-09\nExplore Dungeon Rooms" as UC09
+    usecase "UC-10\nLevel Up a Corgi" as UC10
+    usecase "UC-11\nChange Game Settings" as UC11
+    usecase "UC-12\nPause and Resume a Run" as UC12
+}
+
+
+Player -- UC01
+Player -- UC02
+Player -- UC03
+Player -- UC04
+Player -- UC05
+Player -- UC06
+Player -- UC07
+Player -- UC08
+Player -- UC09
+Player -- UC10
+Player -- UC11
+Player -- UC12
+
+
+UC01 ..> UC02 : <<include>>
+UC05 ..> UC01 : <<extend>>
+UC04 ..> UC05 : <<include>>
+
+
+UC09 ..> UC02 : <<include>>
+
+UC01 ..> UC09 : <<extend>>\n[combat room]
+
+UC12 ..> UC09 : <<extend>>\n[player pauses]
+
+UC12 ..> UC01 : <<extend>>\n[player pauses]
+
+@enduml

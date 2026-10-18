@@ -1,0 +1,35 @@
+@startuml
+title UC-01 Clear a Combat Encounter
+actor Player
+boundary "Game Frontend" as UI
+control "Combat System" as Combat
+database "Game State" as State
+Player -> UI: Attack during active encounter
+UI -> Combat: Request attack
+Combat -> State: Read range, cooldown and target HP
+State --> Combat: Current state
+alt Valid attack hits
+ Combat -> State: Apply damage and start cooldown
+ State --> Combat: Updated target HP
+ Combat --> UI: Damage result
+ UI --> Player: Show hit and updated health
+else Action unavailable
+ Combat --> UI: Reject action with reason
+ UI --> Player: Show cooldown feedback
+else Attack misses
+ Combat --> UI: Miss result
+ UI --> Player: Show miss feedback
+end
+par Enemy acts in real time
+ Combat -> State: Resolve enemy movement / attacks
+ State --> Combat: Updated Corgi HP
+ Combat --> UI: Show changed status
+else Player continues
+ Player -> UI: Move, dash or use ability
+end
+opt Combat objective completed
+ Combat -> State: Mark room clear; grant defined rewards
+ Combat --> UI: Room clear result
+ UI --> Player: Show outcome
+end
+@enduml
