@@ -4,6 +4,8 @@
 | ------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Niklas | 13 SP    | [US-CCS-01](https://github.com/xniklasx-dev/MIGHTYCorgi/issues/29), [US-CCS-02](https://github.com/xniklasx-dev/MIGHTYCorgi/issues/30), [US-CCS-03](https://github.com/xniklasx-dev/MIGHTYCorgi/issues/31) |
 
+Realization: [UCR-03](../use_case_realizations/UCR-03_select_a_corgi_class.md)
+
 ## 1 Brief description
 
 While creating a new Corgi character, the player selects exactly one of three available starting classes. Each class represents a different playstyle and offers unique characteristics that complement the abilities shared by all Corgis. The selection interface allows the player to compare the available classes, view their general descriptions, and choose the class that best matches their preferred playstyle.
@@ -72,6 +74,12 @@ Wireframe shows the three starter classes, their initial abilities, later class 
 ### 4.3 Sequence diagram
 
 ![UC-03 Sequence Diagram](../diagrams/UC-03_sequence.png)
+
+### 4.4 Activity diagram
+
+<!-- The flow of events as an activity diagram. Commit the source file next to the image. -->
+
+![UC-03 Activity diagram](../diagrams/UC-03_activity.png)
 
 ## 5 Special requirements
 

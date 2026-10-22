@@ -1,40 +1,85 @@
 @startuml
+' MIGHTYCorgi - UC-03 Select a Corgi Class
+' Based on docs/use_cases/UC-03_Corgi_Class_Selection.md
 hide footbox
-title UC-06 Select a Corgi class during character creation
+title UC-03 - Select a Corgi Class During Character Creation
+
 actor Player
 participant "Frontend\n(Character creation)" as FE
 participant "Backend\n(Character service)" as BE
-database "SQLite\n(Characters/classes)" as DB
+database "SQLite\n(Characters / classes)" as DB
 
-Player -> FE : Start creating new Corgi
-FE -> BE : Request three starter class definitions
-BE -> DB : Read Barkmage, S.P.A.W. Agent, Barkguard
-DB --> BE : Class definitions / milestone previews
-BE --> FE : Available classes and starting features
-FE --> Player : Show 3 classes and base Corgi abilities
+' Basic flow: steps 1-2
+Player -> FE : Start creating a new Corgi (1)
+FE -> BE : Request available starter classes (2)
+BE -> DB : Read class definitions and milestones
 
-Player -> FE : Choose class; review class preview
-FE --> Player : Show starting / future class features
-Player -> FE : Confirm character creation and class
-FE -> BE : Create character (details, classId)
-BE -> DB : Validate class and insert new character
-with class and initial progression (transaction)
-alt Valid request and transaction succeeds
-    DB --> BE : Character persisted (id, classId)
-    BE --> FE : Creation successful; roster updated
-    FE --> Player : Confirm new Corgi and selected class
-else Invalid class or character data
-    BE --> FE : Validation error; no character created
-    FE --> Player : Correct input or choose a valid class
-else Persistence fails
-    DB --> BE : Transaction rolled back
-    BE --> FE : Creation failed; no partial character
-    FE --> Player : Offer retry or cancellation
+break [2a: Class definitions unavailable]
+    DB --> BE : Class definitions could not be loaded
+    BE --> FE : Report loading failure
+    FE --> Player : Report problem; offer retry or cancellation
+    alt [Player retries]
+        Player -> FE : Retry loading class definitions
+        ref over FE, DB : Return to step 2 - load class definitions
+    else [Player cancels]
+        Player -> FE : Cancel character creation
+        FE -> FE : Discard new-character draft
+    end
 end
 
-note over Player,FE
-Class is tied to this character, not to a run.
-Character-level class milestones, shared skill-tree choices,
-and inventory/items are separate use cases.
-end note
+DB --> BE : Barkmage, S.P.A.W. Agent, Royal Barkguard
+BE --> FE : Playstyles, starting features, later milestones,\nshared base abilities
+FE --> Player : Show three classes and available information
+
+' Basic flow: steps 3-4, plus alternative 3a
+Player -> FE : Select one starter class (3)
+FE --> Player : Preview chosen playstyle, base abilities,\nstarting and later locked features (4)
+
+loop [3a: Player changes class before confirmation]
+    Player -> FE : Choose another starter class
+    FE --> Player : Update preview without creating a character
+end
+
+break [5a: Player cancels at step 5 or earlier]
+    Player -> FE : Cancel character creation
+    FE -> FE : Discard pending selection and character draft
+    FE --> Player : No character created; existing Corgis unchanged
+end
+
+' Basic flow: steps 5-6
+Player -> FE : Confirm selected class and required information (5)
+FE -> BE : Create character(details, classId)
+BE -> BE : Validate class availability and character information
+
+break [6a: Class ID invalid or unavailable]
+    BE --> FE : Reject invalid class; no character saved
+    FE --> Player : Explain problem; reload valid classes
+    ref over FE, DB : Return to step 2 - reload valid classes
+end
+
+break [6b: Character information missing or invalid]
+    BE --> FE : Reject invalid information; no character saved
+    FE --> Player : Explain corrections; keep selected class visible
+    ref over Player, FE : Return to step 5 - correct and reconfirm
+end
+
+BE -> DB : Atomically create new Corgi for this player\nwith selected class, shared base abilities,\nstarting features and initial progression
+
+break [6c: Persistence fails]
+    DB --> BE : Storage failed; transaction rolled back
+    BE --> FE : No partial character; existing Corgis unchanged
+    FE --> Player : Report failure; offer retry or cancellation
+    alt [Player retries]
+        Player -> FE : Retry creating this character
+        ref over Player, FE : Return to step 5 - reconfirm creation
+    else [Player cancels]
+        Player -> FE : Cancel character creation
+        FE -> FE : Discard new-character draft
+    end
+end
+
+' Basic flow: successful persistence is the normal continuation (steps 6-7)
+DB --> BE : Committed (characterId, classId); old Corgis unchanged
+BE --> FE : Creation successful; character available in roster
+FE --> Player : Confirm creation; show new Corgi in roster (7)
 @enduml

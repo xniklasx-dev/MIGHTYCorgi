@@ -1,0 +1,105 @@
+@startuml
+!theme spacelab
+' MIGHTYCorgi — UC-03 Select a Corgi class
+' Activity diagram based on docs/use_cases/UC-03_Corgi_Class_Selection.md
+' Use-case author: Niklas
+' Internal storage is part of MIGHTYCorgi, not a separate external actor.
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam activity {
+  BackgroundColor #F8FAFD
+  BorderColor #334155
+  FontColor #1E293B
+  DiamondBackgroundColor #FFFFFF
+  DiamondBorderColor #475569
+  ArrowColor #475569
+  StartColor #0F766E
+  EndColor #0F766E
+}
+skinparam swimlane {
+  BorderColor #94A3B8
+  TitleBackgroundColor #E8EFF7
+}
+title UC-03 — Select a Corgi Class (Character Creation)
+
+|Player|
+start
+:Start creating a new Corgi character;
+
+' Outer loop: alternative 6a returns to step 2 after an invalid class.
+repeat
+
+  ' Alternative 2a: retry loading definitions or end without a character.
+  repeat
+    |MIGHTYCorgi|
+    :Load the three starter-class definitions;
+    if (Class definitions available?) then ([yes])
+      :Present Barkmage, S.P.A.W. Agent and Royal Barkguard;\nShow playstyles, starting features, locked milestones\nand shared base Corgi abilities;
+    else ([no])
+      :Report unavailable class definitions;\nOffer a retry;
+      |Player|
+      if (Retry loading?) then ([retry])
+        |MIGHTYCorgi|
+      else ([cancel])
+        |MIGHTYCorgi|
+        :Discard the new-character draft;\nLeave existing characters unchanged;
+        stop
+      endif
+    endif
+  repeat while (Definitions still unavailable?) is ([retry]) not ([loaded])
+
+  ' Alternative 3a: changing the selection updates a preview only.
+  repeat
+    |Player|
+    :Select one of the three starter classes;
+    |MIGHTYCorgi|
+    :Preview playstyle, starting abilities and shared base abilities;\nIdentify later class features as locked;
+    |Player|
+    if (Cancel character creation?) then ([yes])
+      |MIGHTYCorgi|
+      :Discard pending selection and draft;\nLeave all existing characters unchanged;
+      stop
+    endif
+  repeat while (Change selected class?) is ([yes]) not ([no])
+
+  ' Alternative 6b loops to step 5; 6c retries step 5 or cancels.
+  ' Alternative 6a exits this inner loop, then repeats the outer loop.
+  repeat
+    |Player|
+    :Confirm creation with the selected class\nand required character information;
+    |MIGHTYCorgi|
+    :Validate submitted class ID and availability;
+    if (Selected class valid and available?) then ([yes])
+      :Validate required character-creation information;
+      if (Character information valid?) then ([yes])
+        :Create and persist one new Corgi atomically;\nSave owner, selected class, initial progression,\nshared base abilities and class starting features;\nLeave existing characters unchanged;
+        if (Persistence succeeds?) then ([yes])
+          :Confirm successful character creation;\nShow new Corgi in the roster;\nRetain its class for future runs;
+          stop
+        else ([no])
+          :Roll back the entire character-creation transaction;\nEnsure no partially created character remains;
+          :Report persistence failure;\nOffer retry or cancellation;
+          |Player|
+          if (Retry creation?) then ([retry])
+            |MIGHTYCorgi|
+          else ([cancel])
+            |MIGHTYCorgi|
+            :Discard the new-character draft;\nLeave all existing characters unchanged;
+            stop
+          endif
+        endif
+      else ([no])
+        :Explain required corrections;\nKeep the selected class visible;\nPersist no character;
+        |Player|
+        :Correct character-creation information;
+      endif
+    else ([no])
+      :Reject creation and explain invalid/unavailable class;\nPersist no character; leave existing Corgis unchanged;
+    endif
+  repeat while (Correct information or retry persistence?) is ([yes]) not ([no])
+
+repeat while (Class rejected and definitions must reload?) is ([yes]) not ([no])
+
+@enduml

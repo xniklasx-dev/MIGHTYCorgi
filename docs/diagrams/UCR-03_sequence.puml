@@ -1,0 +1,98 @@
+@startuml
+' MIGHTYCorgi - Task 04 - Analysis-level use-case realization
+' Refines UC-03_sequence.puml; preserves UC-03 basic flow and alternatives 2a/3a/5a/6a/6b/6c.
+hide footbox
+title UCR-03 - Select a Corgi Class (analysis objects)
+
+actor Player
+boundary ":CorgiCreationUI\n<<boundary>>" as UI
+control ":CreateCorgi\n<<control>>" as CC
+entity ":ClassCatalog\n<<entity>>" as Classes
+entity ":Corgi\n<<entity>>" as Corgi
+entity ":PlayerRoster\n<<entity>>" as Roster
+
+' UC-03 basic flow, steps 1-2
+Player -> UI : startCreatingCorgi() (1)
+UI -> CC : requestStarterClasses() (2)
+CC -> Classes : loadAvailableStarterClasses()
+
+break [2a: class definitions unavailable]
+    Classes --> CC : loadFailed
+    CC --> UI : classDefinitionsUnavailable
+    UI --> Player : Report problem; offer retry or cancellation
+    alt [retry]
+        Player -> UI : retryClassLoading()
+        UI -> CC : requestStarterClasses() (restart step 2)
+    else [cancel]
+        Player -> UI : cancelCreation()
+        UI -> UI : discardDraft()
+    end
+end
+
+Classes --> CC : three class definitions and feature milestones
+CC --> UI : starter classes, base abilities, starting/locked features
+UI --> Player : Show Barkmage, S.P.A.W. Agent, Royal Barkguard (2)
+
+' UC-03 basic flow, steps 3-4 and alternative 3a
+Player -> UI : selectStarterClass(classId) (3)
+UI -> CC : requestClassPreview(classId)
+CC -> Classes : getClassPreview(classId)
+Classes --> CC : playstyle, starting and locked milestones
+CC --> UI : preview with shared base abilities
+UI --> Player : Show selected class preview (4)
+
+loop [3a: player changes the class before confirmation]
+    Player -> UI : selectStarterClass(otherClassId)
+    UI -> CC : requestClassPreview(otherClassId)
+    CC -> Classes : getClassPreview(otherClassId)
+    Classes --> CC : updated class information
+    CC --> UI : updated preview
+    UI --> Player : Show new preview; create no character (4)
+end
+
+break [5a: player cancels before confirming]
+    Player -> UI : cancelCreation()
+    UI -> UI : discardPendingSelectionAndDraft()
+    UI --> Player : No new Corgi; existing Corgis unchanged
+end
+
+' UC-03 basic flow, step 5 and validation in step 6
+Player -> UI : confirmNewCorgi(characterInfo, classId) (5)
+UI -> CC : createCorgi(player, characterInfo, classId)
+CC -> Classes : validateAvailableClass(classId)
+Classes --> CC : current class definition or invalid
+
+break [6a: invalid or unavailable class]
+    CC --> UI : rejectClass; nothing persisted
+    UI --> Player : Explain error; reload valid classes (step 2)
+end
+
+CC -> CC : validateCharacterInfo(characterInfo)
+break [6b: missing or invalid character information]
+    CC --> UI : rejectInformation; nothing persisted
+    UI --> Player : Explain corrections; keep class selected (step 5)
+end
+
+' UC-03 basic flow, step 6: one atomic creation operation
+CC -> Roster : createCorgiAtomically(player, classId, initialState)
+Roster -> Corgi : initialize(classId, baseAbilities, startingFeatures, progression)
+Corgi --> Roster : new character state prepared
+
+break [6c: persistence fails]
+    Roster --> CC : transactionRolledBack; no partial character
+    CC --> UI : creationFailed; existing Corgis unchanged
+    UI --> Player : Report failure; offer retry or cancellation
+    alt [retry]
+        Player -> UI : retryCharacterCreation()
+        UI -> CC : createCorgi(...) (restart step 5)
+    else [cancel]
+        Player -> UI : cancelCreation()
+        UI -> UI : discardDraft()
+    end
+end
+
+' UC-03 basic flow, steps 6-7: successful persistence is the normal path
+Roster --> CC : committed(newCorgi); other Corgis unchanged
+CC --> UI : creationSucceeded(newCorgi, updatedRoster)
+UI --> Player : Confirm saved Corgi; show character in roster (7)
+@enduml
