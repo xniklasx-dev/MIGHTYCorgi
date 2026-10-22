@@ -1,0 +1,91 @@
+@startuml
+' MIGHTYCorgi / Task 05 / UC-03
+' Design-level proposal: UC-03 code has not been implemented yet (2026-10-22).
+' Angular frontend, FastAPI/Python backend and SQLAlchemy persistence.
+title UCR-03 - Design Classes: Select a Corgi Class
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+hide circle
+
+package "Angular frontend" {
+  class CorgiCreationComponent <<component>> {
+    + startCreatingCorgi(): void
+    + showStarterClasses(classes): void
+    + selectClass(classId: int): void
+    + showClassPreview(preview): void
+    + confirmCreation(details): void
+    + cancelCreation(): void
+    + showCreationSuccess(corgi): void
+    + showCreationError(reason: string): void
+  }
+  class CorgiApiService <<service>> {
+    + getStarterClasses(): ClassList
+    + getClassPreview(classId: int): ClassPreview
+    + createCorgi(request): Corgi
+  }
+}
+
+package "FastAPI backend (planned)" {
+  class CorgiController <<boundary>> {
+    + getStarterClasses(): ClassList
+    + getClassPreview(classId: int): ClassPreview
+    + createCorgi(request): Corgi
+  }
+  class CorgiCreationService <<control>> {
+    + list_starter_classes(): ClassList
+    + preview_class(class_id: int): ClassPreview
+    + create_corgi(player_id: int, details, class_id: int): Corgi
+    - validate_character_info(details): void
+  }
+  class ClassRepository <<repository>> {
+    + list_available(): ClassList
+    + find_available_by_id(class_id: int): CorgiClass
+  }
+  class CorgiRepository <<repository>> {
+    + save_atomic(corgi: Corgi, player_id: int): Corgi
+    + rollback(): void
+    + get_roster(player_id: int): CorgiList
+  }
+}
+
+package "Persisted domain models (planned)" {
+  class Player <<entity>> {
+    + id: int
+  }
+  class Corgi <<entity>> {
+    + id: int
+    + player_id: int
+    + class_id: int
+    + level: int
+    + experience: int
+    + base_abilities: AbilityList
+    + starting_features: FeatureList
+    + shared_skill_tree_state: SkillTreeState
+    + initialize_initial_state(corgi_class: CorgiClass): void
+  }
+  class CorgiClass <<entity>> {
+    + id: int
+    + name: string
+    + playstyle: string
+    + is_available: bool
+    + starting_features: FeatureList
+    + future_milestones: MilestoneList
+  }
+}
+
+CorgiCreationComponent --> CorgiApiService : uses
+CorgiApiService ..> CorgiController : HTTP / JSON
+CorgiController --> CorgiCreationService : delegates
+CorgiCreationService --> ClassRepository : queries
+CorgiCreationService --> CorgiRepository : persists / loads roster
+CorgiCreationService ..> Corgi : creates
+ClassRepository ..> CorgiClass : loads
+CorgiRepository ..> Corgi : stores
+CorgiRepository ..> Player : resolves owner
+Player "1" -- "0..*" Corgi : owns
+CorgiClass "1" -- "0..*" Corgi : assigned class
+
+@enduml

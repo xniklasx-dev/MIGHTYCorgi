@@ -1,0 +1,125 @@
+@startuml
+' MIGHTYCorgi / Task 05 / UCR-03: sequence with planned design classes
+' Main success path is not enclosed in an alt block.
+hide footbox
+title UCR-03 - Select a Corgi Class (Design-Object Sequence)
+
+actor Player
+participant ":CorgiCreationComponent\n<<Angular>>" as UI
+participant ":CorgiApiService\n<<Angular>>" as API
+participant ":CorgiController\n<<FastAPI boundary>>" as CTRL
+participant ":CorgiCreationService\n<<control>>" as SVC
+participant ":ClassRepository\n<<repository>>" as CLASSES
+participant ":CorgiRepository\n<<repository>>" as REPO
+participant ":Corgi\n<<entity>>" as CORGI
+
+' Steps 1-2: retrieve classes from persisted class definitions
+Player -> UI : startCreatingCorgi() (1)
+UI -> API : getStarterClasses() (2)
+API -> CTRL : getStarterClasses()
+CTRL -> SVC : list_starter_classes()
+SVC -> CLASSES : list_available()
+
+break [2a: starter-class definitions cannot be loaded]
+    CLASSES --> SVC : loading error
+    SVC --> CTRL : error
+    CTRL --> API : error
+    API --> UI : loading failure
+    UI --> Player : showCreationError(); offer retry/cancel
+    alt [retry]
+        Player -> UI : startCreatingCorgi()
+        ref over UI,CLASSES : Restart class loading at step 2
+    else [cancel]
+        Player -> UI : cancelCreation()
+        UI -> UI : cancelCreation() / discard draft
+    end
+end
+
+CLASSES --> SVC : available starter classes
+SVC --> CTRL : class data with initial and locked features
+CTRL --> API : class data
+API --> UI : class data
+UI -> UI : showStarterClasses(classes)
+UI --> Player : Barkmage, S.P.A.W. Agent, Royal Barkguard (2)
+
+' Steps 3-4 / 3a: changing preview creates no Corgi
+loop [steps 3-4; repeat only for 3a class change]
+    Player -> UI : selectClass(classId) (3)
+    UI -> API : getClassPreview(classId)
+    API -> CTRL : getClassPreview(classId)
+    CTRL -> SVC : preview_class(class_id)
+    SVC -> CLASSES : find_available_by_id(class_id)
+    CLASSES --> SVC : class definition / milestones
+    SVC --> CTRL : playstyle, base and starting abilities, locked milestones
+    CTRL --> API : ClassPreview
+    API --> UI : ClassPreview
+    UI -> UI : showClassPreview(preview)
+    UI --> Player : preview selected class (4)
+end
+
+break [5a: player cancels at or before confirmation]
+    Player -> UI : cancelCreation()
+    UI -> UI : cancelCreation() / discard draft
+    UI --> Player : no new Corgi; existing Corgis unchanged
+end
+
+' Step 5: player confirms; do not modify existing characters
+Player -> UI : confirmCreation(details) (5)
+UI -> API : createCorgi(request)
+API -> CTRL : createCorgi(request)
+CTRL -> SVC : create_corgi(player_id, details, class_id) (6)
+SVC -> CLASSES : find_available_by_id(class_id)
+CLASSES --> SVC : current class or none
+
+break [6a: class ID invalid or no longer available]
+    SVC --> CTRL : invalid / unavailable class
+    CTRL --> API : validation error
+    API --> UI : class error
+    UI -> UI : showCreationError(reason)
+    UI --> Player : choose from reloaded valid classes (step 2)
+    ref over UI,CLASSES : Restart at class loading (step 2)
+end
+
+SVC -> SVC : validate_character_info(details)
+break [6b: character information missing or invalid]
+    SVC --> CTRL : invalid character information
+    CTRL --> API : validation error
+    API --> UI : validation details
+    UI -> UI : showCreationError(reason)
+    UI --> Player : correct details, keep selected class (step 5)
+    ref over UI,SVC : Retry confirmation with corrected details
+end
+
+' Step 6: create new entity and persist it atomically
+create CORGI
+SVC -> CORGI : initialize_initial_state(corgi_class)
+CORGI --> SVC : new Corgi with exactly one class and initial state
+SVC -> REPO : save_atomic(corgi, player_id)
+
+break [6c: persistence fails]
+    REPO -> REPO : rollback()
+    REPO --> SVC : persistence error; no partial character
+    SVC --> CTRL : creation failure
+    CTRL --> API : failure
+    API --> UI : failure
+    UI -> UI : showCreationError(reason)
+    UI --> Player : offer retry from step 5 or cancellation
+    alt [retry]
+        Player -> UI : confirmCreation(details)
+        ref over UI,REPO : Retry creation from step 5
+    else [cancel]
+        Player -> UI : cancelCreation()
+        UI -> UI : cancelCreation() / discard draft
+    end
+end
+
+' Step 7: success is the normal continuation
+REPO --> SVC : saved Corgi (committed)
+SVC -> REPO : get_roster(player_id)
+REPO --> SVC : roster including new Corgi
+SVC --> CTRL : created Corgi and updated roster
+CTRL --> API : 201 Created / new Corgi
+API --> UI : new Corgi and roster
+UI -> UI : showCreationSuccess(corgi)
+UI --> Player : new Corgi available in roster (7)
+@enduml
