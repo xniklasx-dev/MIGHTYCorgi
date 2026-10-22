@@ -60,6 +60,44 @@ sequenceDiagram
 
 ```
 
+### 4.4 Activity diagram
+
+```mermaid
+flowchart TD
+    subgraph Player
+        Start((Start)) --> Press[Press and hold W, A, S, or D]
+        Release[Release key] --> End((End))
+    end
+
+    subgraph System
+        Register[Register input]
+        Calc[Calculate new coordinates]
+        Check{Collision boundary?}
+        Prevent[Prevent movement into obstacle]
+        UpdateMove[Update Corgi coordinates]
+        AnimWalk[Play walking animation]
+        Render[Render Corgi at current position]
+        Halt[Halt movement & revert to idle animation]
+    end
+
+    Press --> Register
+    Register --> Calc
+    Calc --> Check
+
+    Check -- "[obstacle detected]" --> Prevent
+    Prevent --> AnimWalk
+
+    Check -- "[path clear]" --> UpdateMove
+    UpdateMove --> AnimWalk
+
+    AnimWalk --> Render
+    Render --> Release
+
+    Release --> Halt
+    Halt --> End
+
+```
+
 ## 5 Special requirements
 
 The movement input must be registered and reflected on the screen with a maximum latency of 16 milliseconds (targeting 60 FPS) to ensure tight and responsive controls (Performance requirement).
