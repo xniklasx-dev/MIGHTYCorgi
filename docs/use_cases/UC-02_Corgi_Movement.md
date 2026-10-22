@@ -1,8 +1,8 @@
 # UC-02 Move the Corgi
 
-| Author  | Estimate | User stories                                                      |
-| ------- | -------- | ----------------------------------------------------------------- |
-| Andreas | 3 SP     | [US-CM-01](https://github.com/xniklasx-dev/MIGHTYCorgi/issues/18) |
+| Author  | Estimate | User stories | Realization
+| ------- | -------- | -------- | ----------------------------------------------------------------- |
+| Andreas | 3 SP     | [US-CM-01](https://github.com/xniklasx-dev/MIGHTYCorgi/issues/18) | [UCR-02](../use_case_realizations/UCR-02_move_the_corgi.md) |
 
 ## 1 Brief description
 
@@ -40,63 +40,11 @@ The player uses the WASD keys to navigate the Corgi character through the game w
 
 ### 4.3 Sequence diagram
 
-```mermaid
-sequenceDiagram
-    actor Player
-    participant InputHandler as Frontend: Input Handler
-    participant GameEngine as Frontend: Game Engine
-    participant Renderer as Frontend: UI / Renderer
-
-    Player->>InputHandler: Presses 'W' key
-    InputHandler->>GameEngine: Event: Move Up
-    GameEngine->>GameEngine: Check collision boundary
-    GameEngine->>Renderer: Update state (Position Y-1, Animation: WalkUp)
-    Renderer-->>Player: Renders Corgi moving up
-
-    Player->>InputHandler: Releases 'W' key
-    InputHandler->>GameEngine: Event: Stop Move Up
-    GameEngine->>Renderer: Update state (Animation: Idle)
-    Renderer-->>Player: Renders Corgi standing still
-
-```
+![Sequence diagram UC-02](../diagrams/UC-02_sequence.png)
 
 ### 4.4 Activity diagram
 
-```mermaid
-flowchart TD
-    subgraph Player
-        Start((Start)) --> Press[Press and hold W, A, S, or D]
-        Release[Release key] --> End((End))
-    end
-
-    subgraph System
-        Register[Register input]
-        Calc[Calculate new coordinates]
-        Check{Collision boundary?}
-        Prevent[Prevent movement into obstacle]
-        UpdateMove[Update Corgi coordinates]
-        AnimWalk[Play walking animation]
-        Render[Render Corgi at current position]
-        Halt[Halt movement & revert to idle animation]
-    end
-
-    Press --> Register
-    Register --> Calc
-    Calc --> Check
-
-    Check -- "[obstacle detected]" --> Prevent
-    Prevent --> AnimWalk
-
-    Check -- "[path clear]" --> UpdateMove
-    UpdateMove --> AnimWalk
-
-    AnimWalk --> Render
-    Render --> Release
-
-    Release --> Halt
-    Halt --> End
-
-```
+![Activity diagram UC-02](../diagrams/UC-02_activity.png)
 
 ## 5 Special requirements
 
