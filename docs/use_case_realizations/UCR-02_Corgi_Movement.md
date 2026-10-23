@@ -22,3 +22,16 @@ This realization describes how the system executes UC-02. It shows how player ke
 ## 2.3 Walkthrough
 
 The player initiates movement through the `:GameplayUI`. The boundary passes this request to the `:MovementController`, which calculates the intended target coordinates based on the `:Corgi`'s current position. The controller then queries the `:Level` entity to determine if the target position is blocked by a boundary or obstacle. If the path is clear, the controller updates both the position and the animation state of the `:Corgi`. If a collision is detected, only the animation state is updated to simulate walking against an obstacle. Finally, the UI renders the new state for the player.
+
+### 2.5 Design classes
+
+| Analysis object (2.1) | Design class(es) |
+| :--- | :--- |
+| `:GameplayUI <<boundary>>` | `InputManager`, `GameRenderer` |
+| `:MovementController <<control>>` | `PlayerController` |
+| `:Level <<entity>>` | `LevelManager` |
+| `:Corgi <<entity>>` | `CorgiModel` |
+
+![Class diagram UCR-02](../diagrams/UCR-02_classes.png)
+
+![Sequence diagram UCR-02, design classes](../diagrams/UCR-02_sequence_design.png)
