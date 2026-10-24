@@ -2,7 +2,7 @@
 
 | Author  | Estimate | User stories | Realization
 | ------- | -------- | -------- | ----------------------------------------------------------------- |
-| Andreas | 3 SP     | [US-CM-01](https://github.com/xniklasx-dev/MIGHTYCorgi/issues/18) | [UCR-02](../use_case_realizations/UCR-02_move_the_corgi.md) |
+| Andreas | 3 SP     | [US-CM-01](https://github.com/xniklasx-dev/MIGHTYCorgi/issues/18) | [UCR-02](../use_case_realizations/UCR-02_Corgi_Movement.md) |
 
 ## 1 Brief description
 
