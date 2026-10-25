@@ -1,0 +1,43 @@
+@startuml UCR04_Refined_Sequence_Exit
+' Translation of UCR-04_sequence_exit.drawio, alternative flow 7a.
+title UCR-04 — Refined Sequence Diagram: Exit\nAlternative flow 7a — unsaved visual / functional selections
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam sequence {
+  ArrowColor #18314E
+  LifeLineBorderColor #8EA9C4
+  ParticipantBackgroundColor #EEF4FB
+  ParticipantBorderColor #326B9A
+  GroupBackgroundColor #F7FBFE
+  GroupBorderColor #087F80
+}
+actor Player as P
+boundary ":CustomizationPopup" as Popup
+control ":CustomizeCorgiVisuals" as Ctrl
+
+P -> Popup: requestCloseCustomization()
+Popup -> Ctrl: hasPendingVisualChanges()
+Ctrl --> Popup: visual changes: yes / no
+
+alt No pending changes
+  Popup --> P: closePopup()
+else Pending changes
+  Popup --> P: offer Save / Discard / Continue editing
+  P -> Popup: chooseResponse(choice)
+  alt Save
+    Popup -> Ctrl: confirmPendingChanges()
+    ref over Popup,Ctrl: UCR-04 save flow (+ UC-07 if functional pending)
+  else Discard
+    Popup -> Ctrl: discardPendingVisualDraft()
+    Ctrl --> Popup: saved visual profile stays unchanged
+    Popup --> P: close popup; discard both pending drafts
+  else Continue editing
+    Popup --> P: keep both drafts; return to editing (no commit)
+  end
+end
+note over P,Ctrl
+  Shared pop-up also checks UC-07 pending changes (not drawn).
+  Save-failure recovery and cross-case rollback are open.
+end note
+@enduml

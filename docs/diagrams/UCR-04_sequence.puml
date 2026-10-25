@@ -1,0 +1,61 @@
+@startuml UCR04_Refined_Sequence
+' Translation of UCR-04_sequence.drawio; keeps the original interaction semantics.
+title UCR-04 — Refined Sequence Diagram\nBasic flow, option replacement, unavailable selections and saves
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam sequence {
+  ArrowColor #18314E
+  LifeLineBorderColor #8EA9C4
+  ParticipantBackgroundColor #EEF4FB
+  ParticipantBorderColor #326B9A
+  GroupBackgroundColor #F7FBFE
+  GroupBorderColor #087F80
+}
+actor Player as P
+boundary ":CustomizationPopup" as Popup
+control ":CustomizeCorgiVisuals" as Ctrl
+entity ":VisualOptionCatalog" as Catalog
+entity ":CorgiVisualProfile" as Profile
+
+P -> Popup: openVisualCustomization(corgi)
+Popup -> Ctrl: loadVisualState(corgi)
+Ctrl -> Profile: getSavedVisualChoices(corgi)
+Profile --> Ctrl: saved appearance + visual items
+Ctrl -> Catalog: listAvailableVisualOptions(corgi)
+Catalog --> Ctrl: available options
+Ctrl --> Popup: saved state + available options
+Popup --> P: show Corgi Appearance / Visual Items
+
+loop Until player confirms or requests to leave
+  P -> Popup: setAppearance(slot, option) / setVisualItem(slot, item or none)
+  Popup -> Ctrl: proposeVisualSelection(slot, selection)
+  Ctrl -> Catalog: checkAvailability(selection)
+  Catalog --> Ctrl: available / unavailable
+  alt Selection available
+    Ctrl --> Popup: update pending slot + live preview (visuals only)
+    Popup --> P: renderPreview(corgi); stats unchanged
+  else Selection unavailable
+    Ctrl --> Popup: reject selection; keep current pending values
+    Popup --> P: offer another available choice
+  end
+end
+
+P -> Popup: confirmPendingChanges()
+Popup -> Ctrl: commitVisualChoices(draft)
+Ctrl -> Catalog: validateAvailableVisualChoices(draft)
+Catalog --> Ctrl: valid / invalid
+alt All visual selections valid
+  Ctrl -> Profile: storeVisualChoices(corgi, appearance, items)
+  Profile --> Ctrl: saved / save failed
+  Ctrl --> Popup: report success ONLY when stored; otherwise failure
+  Popup --> P: show success OR unconfirmed save (no false success)
+else Invalid selection — no successful save
+  Ctrl --> Popup: reject invalid visual choices; do not persist
+  Popup --> P: show choice unavailable; no saved-state confirmation
+end
+note over Popup,Profile
+  Shared confirmation also covers pending UC-07 changes independently.
+  Error recovery and atomicity are not specified.
+end note
+@enduml

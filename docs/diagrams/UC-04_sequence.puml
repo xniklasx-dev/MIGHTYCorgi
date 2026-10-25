@@ -1,0 +1,45 @@
+@startuml UC04_Sequence
+' Reconstructed from the existing UC-04_sequence.png; no original .drawio was supplied.
+title UC-04 — Corgi Customization\nAppearance and cosmetic items without functional effects
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam sequence {
+  ArrowColor #18314E
+  LifeLineBorderColor #92A9BD
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBackgroundColor #EAF0F8
+  ParticipantBorderColor #326B9A
+  GroupBackgroundColor #F2F7FC
+  GroupBorderColor #8EA9C4
+}
+actor Player as P
+participant "Frontend\nCustomization pop-up" as FE
+participant "Backend\nGame logic" as BE
+participant "Database\nSaved state" as DB
+
+P -> FE: 1. Open visual customization
+FE -> BE: 2. Request saved visual choices
+BE -> DB: 3. Read appearance + visual items
+DB --> BE: 4. Saved selections
+BE --> FE: 5. Available options
+
+loop Until player confirms, discards or leaves
+  P -> FE: 6. Change body / visual item
+  FE --> P: 7. Corgi preview only; stats unchanged
+end
+
+alt Save selected changes
+  P -> FE: 8. Confirm appearance + visual items
+  FE -> BE: 9. Save visual selection only
+  BE -> DB: 10. Validate and store
+  BE --> FE: 11. Save success or failure
+  FE --> P: 12. Confirm success only if saved
+else Leave without saving
+  note over P,BE
+    On exit with pending changes, offer
+    Save / Discard / Continue editing.
+  end note
+end
+note over P,DB: UC-04 affects visuals only; functional effects remain unchanged.
+@enduml

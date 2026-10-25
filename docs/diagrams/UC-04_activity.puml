@@ -1,0 +1,80 @@
+@startuml UC04_Activity_Fixed
+' Source: the user-supplied UC-04_activity_fixed.drawio / .png
+' The PNG is the original Draw.io rendering; this file reproduces the logic in PlantUML.
+title UC-04 — Activity Diagram\nCorgi Customization · actor / system · basic and alternative flows
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam activity {
+  BackgroundColor #EAF8F5
+  BorderColor #087F80
+  FontColor #18314E
+  DiamondBackgroundColor #FFFFFF
+  DiamondBorderColor #326B9A
+  ArrowColor #18314E
+}
+
+|PLAYER («actor»)|
+start
+:Open customization\nfor the selected Corgi;
+|SYSTEM|
+:Load saved appearance, visual items\nand available visual options;
+:Present shared pop-up with\nVisual Customization sub-tabs;
+
+' The selection step is revisited after an unavailable choice, another
+' slot change, or a decision to continue editing. Other paths end the flow.
+while (Customization still being edited?) is (yes)
+  |PLAYER («actor»)|
+  :Select body option or equip, replace\nor remove a visual item;
+  |SYSTEM|
+  if (Option available?) then (yes)
+    :Change only the pending visual slot\nUpdate Corgi live preview\nNo functional/stat changes;
+    |PLAYER («actor»)|
+    if (Change another slot?) then (yes)
+      ' Return to the selection step (while loop).
+    else (no)
+      if (Confirm or leave?) then (confirm)
+        |SYSTEM|
+        :Validate and save pending visual choices\nUC-07 functional changes are handled\nindependently by the shared confirmation;
+        if (Save successful?) then (yes)
+          :Confirm saved state\nStay or leave;
+          stop
+        else (no)
+          :Do not report success\nRecovery still undecided;
+          stop
+        endif
+      else (leave)
+        |SYSTEM|
+        if (Any pending changes in popup?) then (yes)
+          :Offer Save / Discard / Continue editing;
+          |PLAYER («actor»)|
+          if (Player chooses Save / Discard / Continue editing?) then (save)
+            |SYSTEM|
+            :Validate and save pending visual choices\nUC-07 functional changes are handled\nindependently by the shared confirmation;
+            if (Save successful?) then (yes)
+              :Confirm saved state\nStay or leave;
+              stop
+            else (no)
+              :Do not report success\nRecovery still undecided;
+              stop
+            endif
+          elseif (Player chooses?) then (discard)
+            |PLAYER («actor»)|
+            :Discard all pending choices in\nboth areas; close without saving;
+            stop
+          else (continue)
+            ' Return to the selection step with the pending draft intact.
+          endif
+        else (no)
+          :Close pop-up\nNo changes to save;
+          stop
+        endif
+      endif
+    endif
+  else (no)
+    :Reject unavailable choice\nand allow another selection;
+    ' Return to the selection step.
+  endif
+endwhile (no)
+stop
+@enduml
