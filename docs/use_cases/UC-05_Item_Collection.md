@@ -1,9 +1,8 @@
 # UC-05 Collect Item Drops
 
-| Author | Estimate | User stories |
-| ------ | -------- | ------------ |
-| To be assigned | TBD | US-Is01, US-Is02, US-Is03 |
-
+| Author | Estimate | User stories                                                                                                                                                                                                                                                               |
+| ------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Kilian | 13 SP    | [US-IC-01](https://github.com/xniklasx-dev/MIGHTYCorgi/issues/32), [US-IC-02](https://github.com/xniklasx-dev/MIGHTYCorgi/issues/33), [US-IC-03](https://github.com/xniklasx-dev/MIGHTYCorgi/issues/34), [US-IC-04](https://github.com/xniklasx-dev/MIGHTYCorgi/issues/35) |
 
 ## 1 Brief description
 
@@ -54,15 +53,15 @@ Wireframe shows an item on the ground, collection feedback and the obtained-item
 
 The refined Task 4 sequence diagrams show the basic flow and alternative flows of UC-05. The event-specific reward (2b), no-drop case (2a), ignored pickup (4a), temporary treat (5a), already claimed pickup (5b), inventory refusal (6a), and item inspection (7a) appear in the main diagram. Item-to-XP conversion outside a run (7b) is shown separately for readability.
 
-![UC-05 Refined Sequence Diagram](../diagrams/UC-05_sequence_Task4.png)
+![UC-05 Refined Sequence Diagram](../diagrams/UC-05_sequence.png)
 
-![UC-05 Item-to-XP Conversion](../diagrams/UC-05_conversion_Task4.png)
+![UC-05 Item-to-XP Conversion](../diagrams/UC-05_conversion.png)
 
-PlantUML source files: [`UC-05_sequence_Task4.puml`](../diagrams/UC-05_sequence_Task4.puml) and [`UC-05_conversion_Task4.puml`](../diagrams/UC-05_conversion_Task4.puml).
+PlantUML source files: [`UC-05_sequence_Task4.puml`](../diagrams/UC-05_sequence.puml) and [`UC-05_conversion_Task4.puml`](../diagrams/UC-05_conversion.puml).
 
 ### 4.4 Activity diagram
 
-![Activity diagram UC-05](../diagrams/UC-05_AD.png)
+![Activity diagram UC-05](../diagrams/UC-05_activity.png)
 
 ## 5 Special requirements
 

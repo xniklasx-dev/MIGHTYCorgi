@@ -1,34 +1,89 @@
 @startuml
-title UC-05 Collect Item Drops
+!pragma teoz true
+title UC-05 Collect Item Drops — refined sequence (Task 4)
+hide footbox
+skinparam backgroundColor white
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 65
+
 actor Player
-boundary "Game Frontend" as UI
-control "Item Drop System" as Drops
-database "Game / Inventory State" as State
-UI -> Drops: Enemy defeated or event completed
-Drops -> State: Read reward rules and item definitions
-State --> Drops: Drop chances, items and rarities
-alt Drop roll successful
- Drops -> State: Create item pickup
- Drops --> UI: Show dropped item
- UI --> Player: Display pickup with type / rarity
- Player -> UI: Collect item in pickup range
- UI -> Drops: Request pickup
- Drops -> State: Check pickup availability and item type
- State --> Drops: Valid pickup and item definition
- alt Persistent inventory item
-  Drops -> State: Add exactly one item; remove pickup
-  State --> Drops: Updated collected items
-  Drops --> UI: Item name and rarity
-  UI --> Player: Show pickup feedback
- else Temporary treat
-  Drops -> State: Apply treat effect; remove pickup
-  Drops --> UI: Effect feedback
-  UI --> Player: Show active boost
- else Pickup already claimed
-  Drops --> UI: Reject duplicate pickup
-  UI --> Player: No item granted
- end
-else No drop
- Drops --> UI: No item created
+boundary ":GameView" as View
+control ":CollectItemDrops" as Collect
+entity ":DropRules" as Rules
+entity ":WorldPickup" as Pickup
+entity ":Inventory" as Inventory
+entity ":CharacterEffects" as Effects
+
+note over View,Collect
+The game's enemy-defeat / room-event notification
+starts this use case. Only analysis objects are shown.
+end note
+View -> Collect: resolveDrop(rewardEvent)
+Collect -> Rules: getRewardRules(rewardEvent)
+Rules --> Collect: applicable rules and item definitions
+
+alt [event-specific reward — 2b]
+  Collect -> Rules: resolveEventReward(rewardEvent)
+  Rules --> Collect: reward item and rarity
+else [chance-based reward]
+  Collect -> Rules: rollDrop(rewardEvent)
+  Rules --> Collect: drop outcome
 end
+
+alt [no item awarded — 2a]
+  Collect --> View: noPickup()
+else [item awarded]
+  create Pickup
+  Collect -> Pickup: create(itemType, rarity)
+  Collect --> View: showPickup(type, rarity)
+  View --> Player: Display collectible item
+
+  alt [player leaves item on ground — 4a]
+    note over Pickup
+      Pickup remains subject to run lifetime rules.
+      Despawn timing is not defined.
+    end note
+  else [player tries to collect]
+    Player -> View: collect(pickupId)
+    View -> Collect: collect(pickupId)
+    Collect -> Pickup: isAvailable()
+    Pickup --> Collect: available, item behavior
+
+    alt [already collected / unavailable — 5b]
+      Collect --> View: pickupUnavailable()
+      View --> Player: Show no item granted
+    else [available temporary treat — 5a]
+      Collect -> Effects: applyTreat(effectDefinition)
+      Effects --> Collect: effect applied
+      Collect -> Pickup: markCollected()
+      Pickup --> Collect: no longer available
+      Collect --> View: showTreatFeedback(effect)
+      View --> Player: Display temporary effect
+    else [available inventory item]
+      Collect -> Inventory: canAccept(item)
+      Inventory --> Collect: acceptance result
+      alt [inventory cannot accept — 6a]
+        Collect --> View: inventoryCannotAccept()
+        View --> Player: Show reason; item stays in world
+      else [inventory accepts item]
+        Collect -> Inventory: addItemOnce(pickupId, item)
+        Inventory --> Collect: updated items
+        Collect -> Pickup: markCollected()
+        Pickup --> Collect: no longer available
+        Collect --> View: collectionConfirmed(name, rarity)
+        View --> Player: Show feedback / updated inventory
+        opt [player inspects item — 7a]
+          Player -> View: inspect(itemId)
+          View -> Inventory: getItemDetails(itemId)
+          Inventory --> View: name, rarity, type, description
+          View --> Player: Display item details
+        end
+      end
+    end
+  end
+end
+note over Inventory,Effects
+Converting an item into XP (7b) takes place
+outside an active run; see UC-05_conversion_Task4.puml.
+end note
 @enduml
