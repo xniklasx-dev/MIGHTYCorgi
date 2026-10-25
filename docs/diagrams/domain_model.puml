@@ -1,0 +1,94 @@
+@startuml
+' MightyCorgie - conceptual domain model (Task 5)
+' Proposed author attribution: Kilian Lenz
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam classBackgroundColor #F8FAFC
+skinparam classBorderColor #334155
+skinparam classFontColor #0F172A
+skinparam ArrowColor #475569
+skinparam linetype ortho
+left to right direction
+hide methods
+hide circle
+
+class Player {
+  level: Integer
+}
+class Corgi {
+  health: Number
+  movementSpeed: Number
+  furColour: String
+  furPattern: String
+  pawColour: String
+  snoutColour: String
+  eyeColour: String
+  tailColour: String
+}
+class Run {
+  difficulty: Difficulty
+}
+class Room {
+  positionInRun: Integer
+  kind: RoomKind
+}
+class Theme {
+  name: String
+}
+class Enemy {
+  health: Number
+  isBoss: Boolean
+  isFinalBoss: Boolean
+}
+class EnemyType {
+  name: String
+}
+class CharacterClass {
+  name: String
+}
+class Inventory
+class Item {
+  rarity: ItemRarity
+}
+
+enum Difficulty {
+  Easy
+  Normal
+  Hard
+}
+enum RoomKind {
+  Combat
+  Boss
+  FinalBoss
+  Event
+}
+enum ItemRarity {
+  Common
+  Uncommon
+  Rare
+  Epic
+  Legendary
+  Mythic
+}
+
+Player "1" -- "1..*" Corgi : owns >
+Corgi "1" -- "0..*" Run : played with >
+Corgi "0..*" -- "1" CharacterClass : selects >
+Run "1" -- "1..*" Room : contains >
+Room "0..*" -- "1" Theme : uses >
+Room "1" -- "0..*" Enemy : contains >
+Enemy "0..*" -- "1" EnemyType : instance of >
+Corgi "1" -- "0..1" Inventory : owns >
+Inventory "0..1" -- "0..*" Item : contains >
+
+note bottom of Run
+  Every 5th room has a boss and
+  every five rooms change theme.
+  Final boss follows a fixed room count.
+end note
+note right of Enemy
+  Bosses and final boss are special enemies.
+  Each enemy instance belongs to one room.
+  Enemy types can recur in multiple rooms.
+end note
+@enduml

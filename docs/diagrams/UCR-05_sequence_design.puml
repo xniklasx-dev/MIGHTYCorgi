@@ -1,0 +1,65 @@
+@startuml
+title UCR-05 — Design Sequence: Item Drop and Pickup
+hide footbox
+skinparam backgroundColor white
+actor Player
+participant ":GameView" as View
+participant ":ItemDropService" as Service
+participant ":DropRules" as Rules
+participant ":WorldPickup" as Pickup
+participant ":Inventory" as Inv
+participant ":CharacterState" as Char
+Player -> View: defeat enemy / complete room event
+View -> Service: resolveDrop(event)
+Service -> Rules: getRewardRules(event)
+Rules --> Service: rules
+alt [event reward — 2b]
+ Service -> Rules: resolveEventReward(event)
+ Rules --> Service: item
+else [chance-based]
+ Service -> Rules: rollDrop(event)
+ Rules --> Service: item or none
+end
+alt [no item — 2a]
+ Service --> View: no pickup
+else [item awarded]
+ create Pickup
+ Service -> Pickup: <<create>> WorldPickup(item)
+ Service --> View: pickup
+ View --> Player: showPickup(item)
+ alt [player leaves pickup — 4a]
+  note over Pickup: Remains subject to run pickup-lifetime rules
+ else [player collects]
+  Player -> View: collect(pickupId)
+  View -> Service: collect(pickupId)
+  Service -> Pickup: isAvailable()
+  Pickup --> Service: available
+  alt [unavailable — 5b]
+   Service --> View: pickup unavailable
+  else [temporary treat — 5a]
+   Service -> Char: applyTreat(item)
+   Service -> Pickup: markCollected()
+   Service --> View: treat feedback
+  else [inventory item]
+   Service -> Inv: canAccept(item)
+   Inv --> Service: accepted
+   alt [cannot accept — 6a]
+    Service --> View: cannot accept; pickup remains
+   else [accepted]
+    Service -> Inv: addItemOnce(pickupId, item)
+    Inv --> Service: added
+    Service -> Pickup: markCollected()
+    Service --> View: CollectionResult(name, rarity)
+    opt [inspect item — 7a]
+     Player -> View: inspect(itemId)
+     View -> Service: getItemDetails(itemId)
+     Service -> Inv: getItemDetails(itemId)
+     Inv --> Service: ItemDetails
+     Service --> View: ItemDetails
+    end
+   end
+  end
+  View --> Player: showFeedback(result)
+ end
+end
+@enduml

@@ -1,0 +1,71 @@
+@startuml
+title UCR-05 — Generate and collect item drops
+hide footbox
+autonumber
+actor Player
+boundary ":GameView" as View
+boundary ":InventoryView" as InventoryView
+control ":CollectItemDrops" as ItemControl
+entity ":DropRules" as Rules
+entity ":WorldPickup" as Pickup
+entity ":CollectedItems" as Inventory
+entity ":CharacterState" as State
+
+Player -> View: defeatEnemy() / completeRoomEvent()
+View -> ItemControl: resolveDrop(source)
+alt [room or special event: 2b]
+  ItemControl -> Rules: eventRewardRules(source)
+else [enemy]
+  ItemControl -> Rules: enemyDropRules(source)
+end
+Rules --> ItemControl: applicable rules and drop outcome
+alt [no drop: 2a]
+  ItemControl --> View: no pickup generated
+else [item awarded]
+  create Pickup
+  ItemControl -> Pickup: <<create>> (type, rarity)
+  ItemControl --> View: showPickup(type, rarity)
+  View --> Player: display world pickup
+  alt [player leaves pickup: 4a]
+    note over Pickup: Remains subject to unspecified pickup-lifetime rules
+  else [player attempts to collect]
+    Player -> View: collect(pickupId)
+    View -> ItemControl: collect(pickupId)
+    ItemControl -> Pickup: isAvailable()
+    Pickup --> ItemControl: availability
+    alt [already collected or unavailable: 5b]
+      ItemControl --> View: collection rejected
+      View --> Player: show unavailable feedback
+    else [pickup available]
+      ItemControl -> Pickup: itemBehavior()
+      Pickup --> ItemControl: behavior, item data
+      alt [temporary treat: 5a]
+        ItemControl -> State: applyTreatEffect(effect)
+        ItemControl -> Pickup: markCollected()
+        ItemControl --> View: treat applied, pickup removed
+        View --> Player: show treat feedback
+      else [inventory item]
+        ItemControl -> Inventory: canAccept(item)
+        Inventory --> ItemControl: acceptance result
+        alt [cannot accept: 6a]
+          ItemControl --> View: pickup not collected, reason
+          View --> Player: show inventory restriction
+          note over Pickup: Pickup remains available
+        else [can accept]
+          ItemControl -> Inventory: addOnce(pickupId, item)
+          Inventory --> ItemControl: item recorded
+          ItemControl -> Pickup: markCollected()
+          ItemControl --> View: collected(name, rarity), inventory updated
+          View --> Player: show collection feedback
+          opt [inspect item: 7a]
+            Player -> InventoryView: inspect(itemId)
+            InventoryView -> Inventory: details(itemId)
+            Inventory --> InventoryView: name, rarity, type, description
+            InventoryView --> Player: display item details
+          end
+        end
+      end
+    end
+  end
+end
+@enduml

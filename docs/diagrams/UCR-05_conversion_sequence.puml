@@ -1,0 +1,40 @@
+@startuml
+title UCR-05 — Alternative 7b: Convert item to XP
+hide footbox
+autonumber
+actor Player
+boundary ":InventoryView" as View
+control ":ConvertItemToXP" as Convert
+entity ":CollectedItems" as Inventory
+entity ":CharacterState" as State
+
+note over Player,State: Outside an active run; item is unequipped
+Player -> View: requestConversion(itemId)
+View -> Convert: prepareConversion(itemId)
+Convert -> Inventory: checkEligibility(itemId)
+Inventory --> Convert: eligibility and item data
+alt [item not eligible]
+  Convert --> View: conversion refused
+  View --> Player: show refusal
+else [eligible]
+  Convert -> Convert: determineProposedXP(item)
+  note right of Convert: XP formula and restrictions not yet specified
+  Convert --> View: proposed XP, request confirmation
+  View --> Player: show XP and request confirmation
+  alt [cancelled]
+    Player -> View: cancelConversion()
+    View --> Player: show unchanged inventory and XP
+  else [confirmed]
+    Player -> View: confirmConversion(itemId)
+    View -> Convert: confirmConversion(itemId)
+    group One logical conversion — no duplicate grant
+      Convert -> Inventory: removeExactlyOne(itemId)
+      Inventory --> Convert: removal succeeded
+      Convert -> State: creditXPOnce(conversionId, amount)
+      State --> Convert: XP credited
+    end
+    Convert --> View: conversion completed
+    View --> Player: show updated items and XP
+  end
+end
+@enduml

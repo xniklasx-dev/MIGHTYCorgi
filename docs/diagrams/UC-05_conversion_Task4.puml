@@ -1,0 +1,45 @@
+@startuml
+title UC-05 — Convert Collected Item to XP (alternative 7b)
+hide footbox
+skinparam backgroundColor white
+skinparam maxMessageSize 65
+actor Player
+boundary ":InventoryView" as View
+control ":ConvertItemToXP" as Convert
+entity ":Inventory" as Inventory
+entity ":ExperienceBalance" as XP
+
+Player -> View: requestConversion(itemId)
+View -> Convert: previewConversion(itemId)
+Convert -> Inventory: checkEligible(itemId)
+Inventory --> Convert: eligibility and item details
+alt [not eligible]
+  Convert --> View: conversionUnavailable(reason)
+  View --> Player: Display reason; no change
+else [eligible item]
+  Convert -> Convert: determineXPAmount(item)
+  note right of Convert
+    XP values and item restrictions
+    are not yet specified.
+  end note
+  Convert --> View: conversionPreview(xpAmount)
+  View --> Player: Display XP and request confirmation
+  alt [player cancels]
+    Player -> View: cancelConversion()
+    View --> Player: Keep item and XP unchanged
+  else [player confirms]
+    Player -> View: confirmConversion(itemId)
+    View -> Convert: convert(itemId)
+    Convert -> Inventory: removeOneEligibleItem(itemId)
+    Inventory --> Convert: removal confirmed
+    Convert -> XP: creditOnce(xpAmount)
+    XP --> Convert: updated XP
+    Convert --> View: conversionConfirmed(xpAmount)
+    View --> Player: Show updated items and XP
+  end
+end
+note over Inventory,XP
+Removal and XP credit must be consistent;
+the implementation's transaction mechanism is undecided.
+end note
+@enduml

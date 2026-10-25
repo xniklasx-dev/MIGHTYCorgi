@@ -1,0 +1,96 @@
+@startuml
+title UCR-05 — Design Class Diagram: Collect Item Drops
+left to right direction
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+hide empty members
+
+package "Presentation" {
+ class GameView {
+  + resolveDrop(event: RewardEvent): void
+  + collect(pickupId: String): void
+  + inspect(itemId: String): ItemDetails
+  + showPickup(item: ItemDefinition): void
+  + showFeedback(result: CollectionResult): void
+ }
+ class InventoryView {
+  + inspect(itemId: String): ItemDetails
+  + requestConversion(itemId: String): ConversionQuote
+  + confirmConversion(itemId: String): ConversionResult
+ }
+}
+package "Application services" {
+ class ItemDropService {
+  + resolveDrop(event: RewardEvent): WorldPickup
+  + collect(pickupId: String): CollectionResult
+  + getItemDetails(itemId: String): ItemDetails
+ }
+ class ItemConversionService {
+  + quote(itemId: String): ConversionQuote
+  + convert(itemId: String): ConversionResult
+ }
+}
+package "Game model" {
+ class DropRules {
+  + getRewardRules(event: RewardEvent): DropRules
+  + resolveEventReward(event: RewardEvent): ItemDefinition
+  + rollDrop(event: RewardEvent): ItemDefinition
+ }
+ class ItemDefinition {
+  - name: String
+  - type: ItemType
+  - rarity: ItemRarity
+  - description: String
+  + isTreat(): Boolean
+ }
+ class WorldPickup {
+  - pickupId: String
+  - available: Boolean
+  + isAvailable(): Boolean
+  + markCollected(): void
+ }
+ class Inventory {
+  + canAccept(item: ItemDefinition): Boolean
+  + addItemOnce(pickupId: String, item: ItemDefinition): Boolean
+  + getItemDetails(itemId: String): ItemDetails
+  + removeOne(itemId: String): Boolean
+  + isEligibleForConversion(itemId: String): Boolean
+ }
+ class CharacterState {
+  - experience: Integer
+  + applyTreat(item: ItemDefinition): void
+  + grantXP(amount: Integer): void
+ }
+ class ItemDetails <<dataType>>
+ class CollectionResult <<dataType>>
+ class ConversionQuote <<dataType>>
+ class ConversionResult <<dataType>>
+ class RewardEvent <<dataType>>
+ enum ItemType
+ enum ItemRarity
+}
+GameView --> ItemDropService : drop / pickup
+InventoryView --> ItemConversionService : conversion
+InventoryView --> ItemDropService : details
+ItemDropService --> DropRules : rules
+ItemDropService --> Inventory : items
+ItemDropService --> CharacterState : treat
+ItemDropService ..> WorldPickup : <<create>> / use
+ItemConversionService --> Inventory : owned items
+ItemConversionService --> CharacterState : XP
+DropRules ..> ItemDefinition : <<create>> / choose
+WorldPickup "0..*" --> "1" ItemDefinition : represents
+Inventory "1" --> "0..*" ItemDefinition : collected items
+ItemDropService ..> CollectionResult
+ItemConversionService ..> ConversionQuote
+note right of Inventory
+Whether inventory capacity is limited
+and which items are convertible
+are not yet specified.
+end note
+note bottom of ItemConversionService
+A confirmed conversion must remove
+one item and credit XP exactly once.
+end note
+@enduml

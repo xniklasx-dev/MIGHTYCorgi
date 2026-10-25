@@ -1,0 +1,88 @@
+@startuml
+!theme plain
+title UC-05 Collect Item Drops - Activity Diagram
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam activity {
+  BackgroundColor #F5F8FC
+  BorderColor #31445A
+  ArrowColor #31445A
+  DiamondBackgroundColor #FFF6D9
+}
+|Player|
+start
+:Defeat an enemy or complete a room event;
+|Game System|
+if (Reward source?) then ([room / special event])
+  :Use event-specific item rules;
+else ([enemy])
+  :Use enemy drop rules;
+endif
+:Evaluate item drop rules;
+if (Drop awarded?) then ([yes])
+  :Generate item with type and rarity;
+  :Display item pickup in game world;
+else ([no - 2a])
+  :Create no pickup;
+  stop
+endif
+|Player|
+if (Collect the pickup?) then ([yes])
+  :Move Corgi into range and collect item;
+else ([no - 4a])
+  |Game System|
+  :Leave item in world under run pickup-lifetime rules;
+  stop
+endif
+|Game System|
+:Validate pickup availability;
+if (Pickup available?) then ([yes])
+  :Determine item behavior;
+else ([no - 5b])
+  :Reject duplicate or unavailable pickup;
+  stop
+endif
+if (Temporary treat?) then ([yes - 5a])
+  :Apply temporary treat effect;
+  :Remove pickup from world;
+  :Display treat feedback;
+  stop
+else ([no - inventory item])
+  :Check whether inventory accepts item;
+endif
+if (Inventory accepts item?) then ([yes])
+  :Add exactly one collected item;
+  :Mark world pickup as collected;
+  :Show item name and rarity;
+  :Update inventory state;
+else ([no - 6a])
+  :Inform player that item cannot be accepted;
+  :Keep pickup in world until rule is resolved;
+  stop
+endif
+|Player|
+if (Inspect the collected item?) then ([yes - 7a])
+  :Open inventory and inspect item;
+  |Game System|
+  :Show name, rarity, type and description;
+else ([no])
+endif
+|Player|
+if (Request XP conversion outside a run?) then ([yes - 7b])
+  :Select eligible unequipped item;
+  |Game System|
+  :Display proposed XP gain and request confirmation;
+  |Player|
+  if (Confirm conversion?) then ([yes])
+    |Game System|
+    :Remove exactly one item unit;
+    :Grant XP exactly once;
+    :Update inventory and XP;
+  else ([no])
+    |Game System|
+    :Keep item and XP unchanged;
+  endif
+else ([no])
+endif
+stop
+@enduml

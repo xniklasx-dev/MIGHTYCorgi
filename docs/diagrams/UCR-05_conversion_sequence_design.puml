@@ -1,0 +1,41 @@
+@startuml
+title UCR-05 — Design Sequence: Convert Item to XP (7b)
+hide footbox
+skinparam backgroundColor white
+actor Player
+participant ":InventoryView" as View
+participant ":ItemConversionService" as Service
+participant ":Inventory" as Inv
+participant ":CharacterState" as Char
+Player -> View: requestConversion(itemId)
+View -> Service: quote(itemId)
+Service -> Inv: isEligibleForConversion(itemId)
+Inv --> Service: eligible
+alt [not eligible]
+ Service --> View: conversion unavailable
+ View --> Player: show rejection
+else [eligible]
+ Service --> View: ConversionQuote(xp)
+ View --> Player: show XP gain; request confirmation
+ alt [player cancels]
+  Player -> View: cancel
+  note over Inv,Char: No inventory or XP change
+ else [player confirms]
+  Player -> View: confirmConversion(itemId)
+  View -> Service: convert(itemId)
+  Service -> Inv: removeOne(itemId)
+  Inv --> Service: removed
+  alt [removed]
+   Service -> Char: grantXP(amount)
+   Service --> View: ConversionResult(success)
+  else [not removed]
+   Service --> View: ConversionResult(failed)
+  end
+  View --> Player: show conversion result
+ end
+end
+note over Service,Char
+Design invariant: removal and XP credit must be
+atomic / idempotent; mechanism not yet specified.
+end note
+@enduml
