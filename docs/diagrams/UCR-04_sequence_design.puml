@@ -1,0 +1,76 @@
+@startuml UCR04_Sequence_Design
+' Task 05. Proposed implementation names: no application source code was supplied.
+title UC-04 — Design sequence: load, preview and save
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowColor #345B78
+actor Player as P
+boundary "CustomizationPopupView" as View
+control "CustomizationSession" as Session
+control "CorgiVisualService" as Service
+entity "VisualDraft" as Draft
+entity "VisualOptionCatalog" as Catalog
+participant "VisualProfileRepository" as Repo
+participant "FunctionalCustomizationPort\n(UC-07 contract)" as UC07
+
+P -> View: openVisualCustomization(corgi)
+View -> Session: openVisualCustomization(corgi)
+Session -> Service: loadVisualState(corgi)
+Service -> Repo: load(corgi)
+Repo --> Service: saved CorgiVisualProfile
+Service -> Catalog: listAvailableOptions(corgi)
+Catalog --> Service: available options
+Service --> Session: VisualDraft + available options
+Session -> View: showVisualState(draft, options)
+
+loop Appearance or decorative item changed
+  P -> View: choose body option / visual item (or remove)
+  alt Appearance option
+    View -> Session: selectAppearance(slot, option)
+    Session -> Service: proposeAppearance(slot, option)
+  else Visual item
+    View -> Session: selectVisualItem(slot, item?)
+    Session -> Service: proposeVisualItem(slot, item?)
+  end
+  Service -> Catalog: isAvailable(corgi, slot, choice)
+  Catalog --> Service: true / false
+  alt Available
+    Service -> Draft: setAppearance(slot, option) / setVisualItem(slot, item?)
+    Service --> Session: accepted + updated draft
+    Session -> View: renderVisualPreview(draft)
+  else Not available
+    Service --> Session: rejected
+    Session -> View: showUnavailableChoice()
+  end
+end
+
+P -> View: confirmPendingChanges()
+View -> Session: confirmPendingChanges()
+Session -> Service: saveVisualChanges()
+Service -> Catalog: validateDraft(corgi, draft)
+Catalog --> Service: valid / invalid
+alt Valid
+  Service -> Draft: toProfile()
+  Draft --> Service: visual profile
+  Service -> Repo: save(corgi, profile) [only when visual changes exist]
+  Repo --> Service: saved / failed
+  Service --> Session: visual SaveResult
+else Invalid
+  Service --> Session: failure
+end
+alt Visual save succeeded or no visual changes
+  Session -> UC07: hasPendingChanges()
+  UC07 --> Session: yes / no
+  opt Functional changes pending
+    Session -> UC07: savePendingChanges()
+    UC07 --> Session: functional SaveResult
+  end
+  Session -> View: showSaveResult(combinedOutcome)
+else Visual save failed
+  Session -> View: showSaveResult(failure)
+end
+note over Session,UC07
+  Combined success only when every relevant save succeeded.
+  Atomicity / rollback across UC-04 and UC-07 is NOT decided.
+end note
+@enduml

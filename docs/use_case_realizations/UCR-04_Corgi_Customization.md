@@ -33,7 +33,6 @@ This realization describes how the system loads, previews, validates and saves t
 
 ![UCR-04 exit alternative refined sequence diagram](../diagrams/UCR-04_sequence_exit.png)
 
-
 The Task-03 diagram using frontend/backend/database remains unchanged in [UC-04, section 4.3](../use_cases/UC-04_Corgi_Customization.md). The diagrams above refine it using analysis-level **boundary**, **control** and **entity** objects. Names are analysis concepts, not prescribed implementation class names; concrete design classes belong to Task 05.
 
 ### 2.3 Walkthrough
@@ -48,6 +47,39 @@ The Task-03 diagram using frontend/backend/database remains unchanged in [UC-04,
 ### 2.4 State machine
 
 Not applicable. The use case does not currently define a durable lifecycle state (such as `approved`/`cancelled`) for a visual profile; **saved vs. pending** refers to the working copy versus persistent data, not to a defined entity state machine. This can be revisited if explicit lifecycle states are added.
+
+### 2.5 Design classes (Task 05)
+
+**Status: proposed design.** The supplied package contains design documents but no application source code. Therefore the following class and method names are a **concrete implementation plan**, not a claim that these classes already exist. When implementation begins, keep the code and diagrams consistent. The [`UC-04 domain model contribution`](../domain_model_UC-04_draft.md) is **not yet the complete team-wide domain model**.
+
+#### Mapping from Task-04 analysis objects to design classes
+
+| Analysis object (section 2.1) | Design class(es) | Rationale |
+| --- | --- | --- |
+| `:CustomizationPopup` «boundary» | `CustomizationPopupView`, `CustomizationSession` | Rendering and player input remain in the view; the shared session coordinates Save / Discard across UC-04 and UC-07. |
+| `:CustomizeCorgiVisuals` «control» | `CorgiVisualService`, `VisualDraft` | Service validates visual changes; draft holds the unsaved working copy, so the preview never directly changes the persisted state. |
+| `:VisualOptionCatalog` «entity» | `VisualOptionCatalog` | Provides choices and checks their availability without specifying how unlocking or acquisition works. |
+| `:CorgiVisualProfile` «entity» | `CorgiVisualProfile`, `VisualProfileRepository` | Domain profile contains saved visual selections; repository abstracts loading and storing them. |
+
+`FunctionalCustomizationPort` is a **proposed integration interface for UC-07**, not another UC-04 analysis object. Its exact implementation belongs to UC-07. It allows the **shared** `CustomizationSession` to ask about pending functional changes and coordinate confirmation/discarding while `CorgiVisualService` remains visual-only. `Corgi` identifies the already selected character and is not created or selected by this use case.
+
+#### Class diagram
+
+![UCR-04 design class diagram](../diagrams/UCR-04_classes.png)
+
+The arrows represent permanent references for view/session/service/repositories and dashed *dependencies* for shorter-lived uses. The diagram specifies **planned** operations that are called in the design-level sequences below. `VisualProfileRepository` and `FunctionalCustomizationPort` are interfaces/ports rather than confirmed implemented classes.
+
+#### Redrawn sequence diagrams using the design classes
+
+![UCR-04 design-level sequence diagram](../diagrams/UCR-04_sequence_design.png)
+
+![UCR-04 design-level exit sequence diagram](../diagrams/UCR-04_sequence_exit_design.png)
+
+The two **original Task-04 analysis diagrams remain above in section 2.2**. In contrast, these Task-05 diagrams use concrete planned class names and operations. All messages directed to those classes correspond to an operation shown in the class diagram. The `VisualDraft` remains unsaved until an explicit confirmation; changing a cosmetic option must not alter functional stats or equipment.
+
+The domain draft models individual appearance and decorative-slot selections explicitly, whereas the proposed code-oriented `CorgiVisualProfile` may store the same choices in maps. Those are different views of the **same persisted information**, not extra game features.
+
+**Open team decisions, unchanged from Task 04:** option-availability policy and presentation, failed-save recovery, and the transactional behavior when visual and functional changes are saved together. A combined success must not be shown if one required save failed; the proposed sequence **does not guarantee atomic rollback** if the other save already succeeded. The UC-07 interface and shared coordinator must be agreed with the UC-07 author before implementation.
 
 ## 3 Derived requirements
 

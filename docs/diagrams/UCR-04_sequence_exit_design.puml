@@ -1,0 +1,37 @@
+@startuml UCR04_Sequence_Exit_Design
+' Task 05. Proposed names and UC-07 adapter contract, not implemented code.
+title UC-04 — Design sequence: leave with unsaved changes (7a)
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowColor #345B78
+actor Player as P
+boundary "CustomizationPopupView" as View
+control "CustomizationSession" as Session
+control "CorgiVisualService" as Service
+participant "FunctionalCustomizationPort\n(UC-07 contract)" as UC07
+
+P -> View: requestClose()
+View -> Session: requestClose()
+Session -> Service: hasPendingVisualChanges()
+Service --> Session: true / false
+Session -> UC07: hasPendingChanges()
+UC07 --> Session: true / false
+alt Neither area has pending changes
+  Session -> View: close()
+else Either area has pending changes
+  Session -> View: offerExitChoices()
+  P -> View: chooseExitAction(action)
+  View -> Session: chooseExitAction(action)
+  alt Save
+    Session -> Session: confirmPendingChanges()
+    ref over Session: See UCR-04_sequence_design (includes both areas)
+  else Discard
+    Session -> Session: discardPendingChanges()
+    Session -> Service: discardVisualDraft()
+    Session -> UC07: discardPendingChanges()
+    Session -> View: close()
+  else Continue editing
+    note over View,Session: Keep both drafts; do not commit or close.
+  end
+end
+@enduml
