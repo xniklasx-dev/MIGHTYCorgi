@@ -1,0 +1,31 @@
+@startuml
+title MIGHTYCorgi - Deployment Diagram (Local Development)
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam nodeBackgroundColor #F4F8FC
+skinparam artifactBackgroundColor #FFFFFF
+
+node "Developer Laptop" <<device>> {
+
+    node "Web Browser" <<executionEnvironment>> {
+        artifact "mightycorgi-ui (SPA)" <<artifact>>
+    }
+
+    node "Node.js 24+" <<executionEnvironment>> {
+        artifact "Angular Dev Server" <<artifact>>
+    }
+
+    node "Python 3.14 (.venv)" <<executionEnvironment>> {
+        artifact "FastAPI Backend" <<artifact>>
+    }
+
+    node "SQLite Engine" <<executionEnvironment>> {
+        artifact "mightycorgi.db" <<artifact>>
+    }
+}
+
+"Web Browser" -- "Node.js 24+" : HTTP (port 4200)
+"Node.js 24+" -- "Python 3.14 (.venv)" : HTTP /api proxy (port 8000)
+"Python 3.14 (.venv)" -- "SQLite Engine" : File I/O
+@enduml
