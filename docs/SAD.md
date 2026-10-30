@@ -84,8 +84,8 @@ The detailed functional scope, including in-scope and out-of-scope features, is 
 | ----- | ---- |
 | SRS | [SRS.md](SRS.md) |
 | Domain model | [domain_model.png](diagrams/domain_model.png) |
-| Repository | [https://github.com/xniklasx-dev/MIGHTYCorgi] |
-| Board | [https://github.com/users/xniklasx-dev/projects/1] |
+| Repository | https://github.com/xniklasx-dev/MIGHTYCorgi |
+| Board | https://github.com/users/xniklasx-dev/projects/1 |
 
 ### 1.5 Overview
 
