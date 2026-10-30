@@ -1,0 +1,47 @@
+@startuml name component
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam defaultFontName Source Sans Pro
+skinparam ArrowColor #4A6078
+skinparam component {
+  BackgroundColor #EDF4FA
+  BorderColor #4A6078
+}
+skinparam package {
+  BorderColor #8FA9C4
+}
+left to right direction
+
+' Schnittstellen
+interface "SavesAPI\nREST · HTTP/JSON" as RestApi
+interface "SQL / ORM" as SqlOrm
+
+package "Browser / Game Client" {
+  component "Angular UI" as UI
+  component "Game Runtime\n(planned: Phaser.js)" as Game #F7FAFC;line.dashed
+}
+
+component "FastAPI Backend" as Backend {
+  component "REST API\n(existing: health, saves)" as Api
+  component "Application Services" as Services #F7FAFC;line.dashed
+  component "Persistence / Repositories\n(SQLAlchemy)" as Persistence
+}
+
+component "SQLite\nmightycorgi.db" as Db
+
+' Frontend
+UI ..> Game : input / rendering
+
+' Assembly: Angular UI braucht, REST API bietet an
+RestApi ..> Api
+UI ..> RestApi
+
+' Innerhalb des Backends
+Api ..> Persistence : current saves flow
+Api ..> Services
+Services ..> Persistence
+
+' Datenbank: SQLite bietet an, Persistence braucht
+SqlOrm - Db
+Persistence ..> SqlOrm
+@enduml
