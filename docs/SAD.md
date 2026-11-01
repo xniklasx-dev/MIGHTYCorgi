@@ -1,4 +1,4 @@
-# [Project Name] — Software Architecture Document
+# MIGHTYCorgi — Software Architecture Document
 
 <!--
 HOW TO USE THIS TEMPLATE
@@ -16,7 +16,7 @@ HOW TO USE THIS TEMPLATE
 
 | Team | Version | Last change |
 | ---- | ------- | ----------- |
-| MIGHTYCorgi | [0.1] | 30.10.2026 |
+| MIGHTYCorgi | [1.1] | 01.11.2026 |
 
 The Git history of this file is the revision history.
 
