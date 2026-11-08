@@ -16,7 +16,7 @@ HOW TO USE THIS TEMPLATE
 
 | Team | Version | Last change |
 | ---- | ------- | ----------- |
-| MIGHTYCorgi | [1.1] | 01.11.2026 |
+| MIGHTYCorgi | [2.0] | 08.11.2026 |
 
 The Git history of this file is the revision history.
 
@@ -110,11 +110,75 @@ The architecture consists of an Angular and Phaser.js frontend for the user inte
 
 ## 3 Architectural goals and constraints
 
-<!-- Lecture 7. The requirements and constraints that shape your architecture: quality goals
-     such as availability or security, and constraints such as your stack (SRS 3.6), your team
-     size, or your schedule. Leave this section as it is until then. -->
+Section 3 lists the requirements that shape our architecture: our quality goals as scenarios, rated by business value and technical risk, and the constraints we have to design around. How the architecture reaches each scenario follows in section 11.
 
-*Follows with Lecture 7.*
+### 3.1 Quality goals
+
+*Author: Kilian*
+
+| ID | Quality | Refinement | Scenario, short | Value | Risk | Author |
+| --- | --- | --- | --- | :---: | :---: | --- |
+| QS-03 | Reliability | Character data persistence | Player saves and reloads a character → level, inventory and equipment remain identical in 100 consecutive tests, with zero discrepancies | H | M | Niklas |
+| QS-02 | Performance | Room generation time | Player starts a run or enters the next room → new room generated and rendered within 1.5 seconds in 95% of transitions | H | M | Andreas |
+| QS-01 | Usability | First-run navigation | First-time player navigates the menu, selects a Corgi and starts a run → at least 8 of 10 succeed within 3 minutes without assistance | H | M | Tony |
+
+The team has decided to prioritize **QS-03 (Reliability)** because accurate and persistent storage of character progression is fundamental to the player experience. Losing progress or incorrectly restoring character data would undermine the core gameplay loop, making reliability more critical than performance and usability despite all three scenarios having the same business value and technical risk ratings.
+
+#### QS-01 First-run Navigation
+
+| QS-01 First-run Navigation | *Author: Tony* · Refines NFR-U-01 |
+| --- | --- |
+| Source | A first-time player |
+| Stimulus | Opens the game and tries to navigate the main menu, select a Corgi character, and start the first run. |
+| Artifact | Frontend: main menu, character selection, and the transition into gameplay. |
+| Environment | Normal operation in a modern browser with keyboard and mouse input. The player has no previous experience with the game and receives no external assistance. |
+| Response | The game guides the player through the menu and character selection and starts a run with the selected Corgi. |
+| Response measure | At least 8 out of 10 first-time players complete the entire process within 3 minutes without external assistance. |
+
+**Business value H:** Starting a first run is essential to the core gameplay. If new players cannot complete this process, they may leave before experiencing the game.
+
+**Technical risk M:** The scenario involves several connected frontend screens and the transition into gameplay. These must work consistently, and the usability target has to be verified with first-time players.
+
+#### QS-02 Room Generation Time
+
+| QS-02 Room Generation Time | *Author: Andreas* · Refines NFR-P-03 |
+| --- | --- |
+| Source | A player |
+| Stimulus | Starts a new run or transitions to the next room. |
+| Artifact | Angular/Phaser.js frontend and FastAPI backend. |
+| Environment | Normal gameplay operation. |
+| Response | Procedurally generates and renders the new room layout. |
+| Response measure | Within 1.5 seconds in 95% of transitions. |
+
+**Business value H:** A smooth gameplay flow without long interruptions from loading screens is essential for the player experience in an action roguelike.
+
+**Technical risk M:** Procedural room generation can lead to performance fluctuations depending on the algorithm, requiring careful optimization between the backend and the game engine.
+
+#### QS-03 Reliable Character Persistence
+
+| QS-03 Reliable Character Persistence | *Author: Niklas* · Refines NFR-R-01 |
+| --- | --- |
+| Source | A player saving and reloading a Corgi character's persistent progression data. |
+| Stimulus | Saves character state (level, inventory, equipped items), subsequently reloads and reconstructs stored data. |
+| Artifact | Character persistence functionality: FastAPI REST API, persistence/repositories (SQLAlchemy), SQLite database, and Angular/Phaser.js frontend for save/reload interaction. |
+| Environment | Normal single-player operation: frontend, backend and database functioning correctly, existing character progression, collected items and equipped equipment, consecutive save/reload operations under controlled test conditions. |
+| Response | Stores and restores character progression accurately, with identical character level, inventory and equipment before and after reloading. No lost, duplicated or modified items and no incorrect equipment assignments. |
+| Response measure | 100 consecutive save-and-reload tests, 100/100 identical character states (100% success rate), zero discrepancies in level, inventory or equipped items. |
+
+**Business value H:** Reliable character persistence is essential for long-term progression, item collection and equipment customisation. Losing or modifying saved progress would undermine player achievements, reduce trust and negatively affect the gameplay experience.
+
+**Technical risk M:** Consistent storage and restoration of interconnected character data require careful coordination between frontend, backend and database. However, established technologies such as FastAPI, SQLAlchemy and SQLite, combined with a single-player architecture, keep the complexity manageable through proper data modelling, transactions and testing.
+
+### 3.2 Constraints
+
+*Author: Kilian*
+
+| ID | Kind | Constraint | What it means for our architecture |
+| --- | --- | --- | --- |
+| C-01 | Technical | The project uses the technology stack defined in [SRS 3.6](SRS.md#36-design-constraints). | The architecture must integrate the frontend, backend and persistence components using the selected technologies. Components and interfaces must remain compatible with the established stack. |
+| C-02 | Organizational | The project is developed by a small student team alongside other university courses and within the academic project schedule. | The architecture must remain manageable for a small team. |
+| C-03 | Economic | The project is developed by students, so there is no budget | Everything has to be free or selfdeveloped |
+
 
 ## 4 Use-case view
 
