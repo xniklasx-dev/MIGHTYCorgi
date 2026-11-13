@@ -16,7 +16,7 @@ HOW TO USE THIS TEMPLATE
 
 | Team | Version | Last change |
 | ---- | ------- | ----------- |
-| MIGHTYCorgi | [2.0] | 08.11.2026 |
+| MIGHTYCorgi | [3.1] | 13.11.2026 |
 
 The Git history of this file is the revision history.
 
