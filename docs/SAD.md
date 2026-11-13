@@ -307,7 +307,47 @@ This modular structure is intended to separate responsibilities and support inde
 
 ### 8.2 Layers
 
-*Follows with Lectures 8 and 9.*
+*Author: Kilian*
+
+Our game follows a **modular monolith architecture**. The system is divided into six functional modules, each responsible for a specific part of the game. All modules are part of a single application and are not deployed independently.
+
+Each module follows an internal layered structure to separate presentation logic, game logic, and data management.
+
+| Layer | Folder | Contains | May use |
+|---|---|---|---|
+| Presentation | `src/<module>/presentation/` | User input handling, visual representation, UI interactions | Public interfaces of the Core layer |
+| Core | `src/<module>/core/` | Game mechanics, domain objects, business rules, module interfaces | Internal Core components and public interfaces of other modules |
+| Persistence | `src/<module>/persistence/` | Saving and loading game data, repositories, data serialization | Interfaces defined by its own Core layer |
+
+The system consists of the following six modules:
+
+| Module | Responsibility |
+|---|---|
+| Character | Player character, movement, character attributes and status |
+| Combat | Combat mechanics, attacks, damage calculation and combat interactions |
+| Item | Item definitions, item drops, inventory-related item management and item effects |
+| Enemy | Enemy behavior, enemy attributes and interactions with the player |
+| World | Game world, levels, environments and world-related interactions |
+| Progress | Game progression, player progress and progression-related game state |
+
+**Module communication rules**
+
+To maintain clear separation between modules, the following architectural rules apply:
+
+1. Each module is responsible for its own internal data and functionality.
+2. Modules may communicate with other modules only through their explicitly defined public interfaces.
+3. Direct access to the internal classes, data structures or persistence implementations of another module is prohibited.
+4. The Presentation layer delegates game-related operations to the Core layer and must not directly access Persistence.
+5. The Core layer contains the game rules and defines interfaces for required data access. Persistence implements these interfaces.
+6. Circular dependencies between modules should be avoided.
+
+**Checked in the code**
+
+The verification of the architectural rules against the actual implementation has not yet been performed, as none of our use cases has been fully coded.
+
+Once a use case is completed, we will trace its execution through the relevant modules and layers, inspect the dependencies between classes, and verify whether the defined architectural rules are followed. The result will then be added in this section.
+
+We plan to use **UC-01 Combat System** for this verification, as it involves interactions between multiple modules, including Combat, Character and Enemy.
 
 ## 9 Data view
 
