@@ -108,6 +108,9 @@ The architecture consists of an Angular and Phaser.js frontend for the user inte
 | Deployment view | Where are the application components deployed, and how do they communicate? | UML deployment diagram | 7 |
 | Implementation view | How is the application divided into components, and what are their responsibilities? | UML component diagram and package diagram | 8 |
 
+### 2.2 Architecture Decisions
+* [ADR-01 Modular Monolith](decisions/ADR-01_modular-monolith.md) (accepted, 14.11.2026)
+
 ## 3 Architectural goals and constraints
 
 Section 3 lists the requirements that shape our architecture: our quality goals as scenarios, rated by business value and technical risk, and the constraints we have to design around. How the architecture reaches each scenario follows in section 11.
