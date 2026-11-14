@@ -367,7 +367,14 @@ We plan to use **UC-01 Combat System** for this verification, as it involves int
 
 ## 11 Quality
 
-<!-- Lectures 7 to 9. How your architecture supports the qualities you need: availability,
-     security, maintainability, … Leave this section as it is until then. -->
+*Author: Niklas*
 
-*Follows with Lectures 7 to 9.*
+How our architecture reaches the scenarios of section 3.1:
+
+| Scenario | Tactics | Where | Status | Price | Decision |
+| --- | --- | --- | --- | --- | --- |
+| QS-03 Reliable Character Persistence | Atomic database transactions for saving character level, inventory and equipment together, and data integrity validation using database constraints to prevent duplicated items and invalid equipment assignments | Core and Persistence layers of the Character, Item and Progress modules | planned | Additional transaction handling, data validation and database constraints | — |
+| QS-02 Room Generation Time | Lightweight JSON representation for room grids (backend) and Object Pooling for tiles/enemies in Phaser.js to avoid rendering delays (frontend) | Core and Presentation layers of the World module | planned | Object pooling increases memory usage in the browser; frontend needs to parse the grid | — |
+| QS-01 First-run navigation | Preselect an available Corgi, guide players to character creation if none exists, allow players to return to previous menus and change their selection without restarting the process | Angular frontend: main menu and character selection | planned | Additional navigation state handling and usability testing | — |
+
+QS-03 Reliable Character Persistence is our highest-priority scenario, as reliable character progression and item persistence are fundamental to the core gameplay loop of MIGHTYCorgi. Atomic transactions ensure that character level, inventory and equipment are saved together, while data integrity validation prevents inconsistent or duplicated items and invalid equipment assignments. We prefer this approach over saving each part of the character state independently, as separate save operations could result in partially updated or inconsistent character data if one operation fails.
