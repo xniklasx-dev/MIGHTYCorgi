@@ -108,6 +108,16 @@ The architecture consists of an Angular and Phaser.js frontend for the user inte
 | Deployment view | Where are the application components deployed, and how do they communicate? | UML deployment diagram | 7 |
 | Implementation view | How is the application divided into components, and what are their responsibilities? | UML component diagram and package diagram | 8 |
 
+### 2.1 Architectural style
+
+*Author: Tony*
+
+**Main style.** The target architecture of MIGHTYCorgi is a **modular monolith** organized around six gameplay domains: Character, Combat, Item, Enemy, World, and Progress. These modules are intended to have clear responsibilities and communicate through defined interfaces instead of being deployed as separate services. Within each module, we plan to separate presentation, core logic, and persistence, as described in section 8.2. On the system level, we also use a **client-server architecture**: the Angular frontend (with Phaser.js planned for gameplay) communicates with one Python FastAPI backend via REST, while SQLite stores persistent data.
+
+**Why.** (1) Because our project is developed by a small student team alongside other courses (C-02), a single backend and clearly separated gameplay modules are easier for us to develop, coordinate, test, and maintain than several independently deployed services. (2) Reliable character persistence is a high-priority requirement (QS-03). Keeping persistent operations within one backend and a defined persistence boundary makes it easier to coordinate saving and loading character progression, inventory, and equipment without communication between distributed services. However, the required consistency still depends on correct transaction handling and tests. (3) As the project has no budget (C-03), a monolithic backend with local SQLite storage avoids the additional hosting and operational overhead of multiple services.
+
+**Rejected alternative.** We considered a traditional **layered monolith**, organized mainly by technical concerns such as presentation, services, and persistence. This structure would provide familiar and clear technical responsibilities, and parts of our current backend already follow it. However, as gameplay features such as character customization or combat evolve, their implementation could become spread across shared technical folders. Organizing the target system around gameplay domains should make ownership and changes easier for our small team (C-02). This does not mean that we reject layers altogether: we intend to use them inside each module.
+
 ### 2.2 Architecture Decisions
 * [ADR-01 Modular Monolith](decisions/ADR-01_modular-monolith.md) (accepted, 14.11.2026)
 
